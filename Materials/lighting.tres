@@ -1,0 +1,75 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type spatial;
+render_mode depth_draw_opaque, unshaded, shadows_disabled, cull_disabled;
+
+uniform sampler2D lighting_noise; // Noise texture for lightning movement
+uniform sampler2D lightning_texture; // Texture for the lightning effect
+
+uniform float amplitude : hint_range(0.0, 2.0) = 0.2; // Amplitude of the zig-zag motion
+uniform float frequency : hint_range(0.1, 10.0) = 2.0; // Frequency of the zig-zag motion
+uniform float speed : hint_range(0.1, 10.0) = 5.0; // Speed of the zig-zag motion
+
+uniform vec4 center_color : hint_color = vec4(1.0, 1.0, 1.0, 1.0); // Color for the center of the lightning
+uniform vec4 edge_color : hint_color = vec4(1.0, 0.75, 0.3, 1.0); // Color for the edges of the lightning
+
+// UV transformation parameters
+uniform float uv_offset_x : hint_range(-1.0, 1.0) = 0.0; // Offset for UV x-coordinate
+uniform float uv_offset_y : hint_range(-1.0, 1.0) = 0.0; // Offset for UV y-coordinate
+uniform float uv_scale_x : hint_range(0.1, 10.0) = 1.0; // Scale for UV x-coordinate
+uniform float uv_scale_y : hint_range(0.1, 10.0) = 1.0; // Scale for UV y-coordinate
+uniform float uv_rotation : hint_range(0.0, 6.28319) = 0.0; // Rotation for UV coordinates (in radians)
+
+void vertex() {
+    // Sample the noise texture to get a displacement value
+    vec2 noise_uv = vec2(VERTEX.z * 0.1 + TIME * speed, VERTEX.x * 0.1); // Adjust the scale and speed as needed
+    float noise_value = texture(lighting_noise, noise_uv).r;
+
+    // Calculate the zig-zag displacement using the noise value
+    float displacement = amplitude * (noise_value - 0.5) * 2.0;
+
+    // Apply the displacement to the vertex position
+    VERTEX.y += displacement;
+}
+
+void fragment() {
+    // Transform UV coordinates
+    vec2 uv = UV;
+    
+    // Scale UV
+    uv = (uv - vec2(0.5)) * vec2(uv_scale_x, uv_scale_y) + vec2(0.5);
+    
+    // Rotate UV
+    float cos_angle = cos(uv_rotation);
+    float sin_angle = sin(uv_rotation);
+    uv = vec2(
+        cos_angle * (uv.x - 0.5) - sin_angle * (uv.y - 0.5) + 0.5,
+        sin_angle * (uv.x - 0.5) + cos_angle * (uv.y - 0.5) + 0.5
+    );
+
+    // Offset UV
+    uv += vec2(uv_offset_x, uv_offset_y);
+
+    // Sample the lightning texture with transformed UV
+    vec4 texture_color = texture(lightning_texture, uv);
+
+    // Calculate distance from the center
+    float dist_from_center = length(uv - vec2(0.5)); // Distance from the center of the UV coordinates
+
+    // Interpolate between center color and edge color based on distance
+    vec4 color = mix(center_color, edge_color, dist_from_center * 2.0); // Scale distance for smoother gradient
+
+    // Adjust the color with the texture
+    vec4 final_color = color * texture_color;
+
+    // Make dark parts transparent
+    float brightness = dot(texture_color.rgb, vec3(0.299, 0.587, 0.114)); // Standard luminance calculation
+    if (brightness < 0.1) {
+        ALPHA = 0.0;
+    } else {
+        ALBEDO = final_color.rgb;
+        ALPHA = final_color.a;
+    }
+}
+"

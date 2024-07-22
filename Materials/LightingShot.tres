@@ -1,0 +1,74 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
+
+[ext_resource path="res://Game/Shaders/Images/FX_WaveMask_01.png" type="Texture" id=1]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+render_mode depth_draw_opaque, unshaded, shadows_disabled, cull_disabled;
+
+uniform sampler2D thunder_texture;
+uniform float speed = 1.0; // Speed of the thunder animation
+uniform float min_scale = 0.1; // Minimum scale factor
+uniform float max_scale = 1.0; // Maximum scale factor
+uniform float transition_speed : hint_range(0.1, 10.0) = 5.0; // Speed of the scaling transition
+uniform float alpha_threshold : hint_range(0.0, 1.0) = 0.5; // Threshold to determine transparency
+uniform vec2 scroll_direction = vec2(1.0, 0.0); // Direction of the texture scroll
+uniform vec4 color_center : hint_color = vec4(0.0, 0.0, 1.0, 1.0); // Color at the center (default: blue)
+uniform vec4 color_edge : hint_color = vec4(0.0, 0.5, 1.0, 1.0); // Color at the edges (default: azure)
+uniform float rotation_angle = 0.0; // Rotation angle in radians
+uniform float pulsate_speed : hint_range(0.1, 100.0) = 50.0; // Increased speed of the pulsating effect
+uniform float blink_frequency : hint_range(0.1, 100.0) = 10.0; // Speed of the blinking effect
+
+void fragment() {
+    float time = TIME * (transition_speed / 100.0); // Divide transition_speed by 100
+    float scale_factor = mix(min_scale, max_scale, smoothstep(0.0, 1.0, sin(time) * 0.5 + 0.5));
+
+    vec2 uv = UV + scroll_direction * TIME * speed; // Move texture in the specified direction
+    uv *= scale_factor;
+
+    // Calculate rotated UV coordinates manually
+    float c = cos(rotation_angle);
+    float s = sin(rotation_angle);
+    
+    vec2 centered_uv = uv - vec2(0.5, 0.5); // Center UV coordinates
+    vec2 rotated_uv;
+    rotated_uv.x = centered_uv.x * c - centered_uv.y * s;
+    rotated_uv.y = centered_uv.x * s + centered_uv.y * c;
+    vec2 final_uv = rotated_uv + vec2(0.5, 0.5); // Recenter UV coordinates
+    
+    vec4 tex_color = texture(thunder_texture, final_uv);
+    
+    // Calculate distance from the center (0.5, 0.5)
+    float dist = length(final_uv - vec2(0.5, 0.5));
+    
+    // Color ramp: color_center at the center, color_edge at the extremities
+    vec4 color_ramp = mix(color_center, color_edge, dist);
+    
+    // Pulsating effect
+    float pulsate = (sin(TIME * pulsate_speed) * 0.5 + 0.5); // Increased pulsate speed
+    
+    // Blinking effect
+    float blink = abs(sin(TIME * blink_frequency));
+    
+    float brightness = (tex_color.r + tex_color.g + tex_color.b) / 3.0; // Average brightness
+    ALPHA = tex_color.a * smoothstep(alpha_threshold, 1.0, brightness) * pulsate * blink; // Adjust alpha based on brightness, pulsate, and blink
+    
+    ALBEDO = tex_color.rgb * color_ramp.rgb; // Apply color ramp
+}
+"
+
+[resource]
+render_priority = 2
+shader = SubResource( 1 )
+shader_param/speed = 3.0
+shader_param/min_scale = 0.1
+shader_param/max_scale = 1.1
+shader_param/transition_speed = 0.0
+shader_param/alpha_threshold = 0.5
+shader_param/scroll_direction = Vector2( -0.2, -1 )
+shader_param/color_center = Color( 1, 1, 1, 1 )
+shader_param/color_edge = Color( 0.0980392, 0, 1, 1 )
+shader_param/rotation_angle = 6.0
+shader_param/pulsate_speed = 34.152
+shader_param/blink_frequency = 10.0
+shader_param/thunder_texture = ExtResource( 1 )
