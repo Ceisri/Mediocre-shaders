@@ -1,0 +1,85 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=2]
+
+[ext_resource path="res://Game/Shaders/Images/FX_PatternTile_05.png" type="Texture" id=1]
+[ext_resource path="res://Game/Shaders/Images/Noise_glt_10_a.png" type="Texture" id=2]
+[ext_resource path="res://Game/Shaders/Images/0010.png" type="Texture" id=3]
+
+[sub_resource type="Shader" id=16]
+code = "shader_type spatial;
+render_mode depth_draw_opaque, unshaded, shadows_disabled, cull_disabled;
+
+uniform sampler2D texture : hint_albedo; // Main texture
+uniform sampler2D transparency_texture : hint_albedo; // Texture controlling transparency
+uniform sampler2D noise_texture; // Noise texture to perturb transparency UVs
+
+uniform vec4 water_color : hint_color = vec4(0.0, 0.5, 1.0, 1.0); // Water color picker
+
+uniform float scroll_speed : hint_range(0.0, 10.0) = 1.0; // Horizontal scrolling speed
+uniform float uv_scale_x : hint_range(0.1, 30.0) = 1.0; // Horizontal UV scale
+uniform float uv_scale_y : hint_range(0.1, 30.0) = 1.0; // Vertical UV scale
+
+// Wave parameters
+uniform float wave_speed : hint_range(0.0, 2.0) = 1.0;
+uniform float wave_scale : hint_range(0.1, 10.0) = 1.0;
+uniform float wave_height : hint_range(0.0, 1.0) = 0.1;
+
+// Transparency control
+uniform float transparency_scroll_speed : hint_range(0.0, 10.0) = 1.0; // Scrolling speed of the transparency texture
+uniform float transparency_effect : hint_range(0.0, 1.0) = 1.0; // Controls how much the transparency texture affects the final alpha
+
+varying vec2 uv;
+varying vec2 transparency_uv;
+
+void vertex() {
+    // Calculate wave displacement
+    float wave = sin((UV.x * wave_scale + TIME * wave_speed) * 3.14159) * wave_height;
+    
+    // Apply UV scaling and scrolling for the main texture
+    uv = UV * vec2(uv_scale_x, uv_scale_y) + vec2(TIME * scroll_speed, 0.0);
+    
+    // Apply UV scaling and scrolling for the transparency texture
+    transparency_uv = UV * vec2(uv_scale_x, uv_scale_y) + vec2(TIME * transparency_scroll_speed, 0.0);
+    
+    // Displace the vertex position along the y-axis with the wave effect
+    VERTEX.y += wave;
+}
+
+void fragment() {
+    // Sample the main texture using modified UV coordinates
+    vec4 tex_color = texture(texture, uv);
+    
+    // Sample the noise texture to perturb transparency UVs
+    vec2 noise_uv = texture(noise_texture, UV * 0.1).rg; // Adjust the UV scale for noise texture if needed
+    
+    // Perturb transparency UVs with noise
+    vec2 perturbed_transparency_uv = transparency_uv + noise_uv * 0.1; // Adjust noise strength as needed
+    
+    // Sample the transparency texture using perturbed UV coordinates
+    float alpha_from_texture = texture(transparency_texture, perturbed_transparency_uv).r;
+    
+    // Combine the transparency texture with the main texture alpha using the transparency_effect factor
+    float final_alpha = mix(tex_color.a, tex_color.a * alpha_from_texture, transparency_effect);
+    
+    // Mix the main texture color with the chosen water color
+    vec3 color_out = mix(tex_color.rgb, water_color.rgb, water_color.a); // Blend using water_color's alpha
+    
+    // Set color and alpha
+    ALBEDO = color_out;
+    ALPHA = final_alpha;
+}
+"
+
+[resource]
+shader = SubResource( 16 )
+shader_param/water_color = Color( 0, 0.501961, 1, 0.294118 )
+shader_param/scroll_speed = 0.11
+shader_param/uv_scale_x = 15.0
+shader_param/uv_scale_y = 15.0
+shader_param/wave_speed = 1.0
+shader_param/wave_scale = 1.0
+shader_param/wave_height = 0.12
+shader_param/transparency_scroll_speed = 0.3
+shader_param/transparency_effect = 0.337
+shader_param/texture = ExtResource( 3 )
+shader_param/transparency_texture = ExtResource( 2 )
+shader_param/noise_texture = ExtResource( 1 )
