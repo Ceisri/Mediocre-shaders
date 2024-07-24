@@ -1,6 +1,6 @@
 [gd_resource type="VisualShader" load_steps=12 format=2]
 
-[ext_resource path="res://Game/Shaders/Images/FreezeSnow.png" type="Texture" id=1]
+[ext_resource path="res://Game/Shaders/Images/water_Texture.png" type="Texture" id=1]
 [ext_resource path="res://Game/Shaders/Images/Noise_glt_10_a.png" type="Texture" id=2]
 
 [sub_resource type="VisualShaderNodeTexture" id=7]
@@ -72,7 +72,7 @@ void light() {
 
 }
 "
-graph_offset = Vector2( -686.748, -94.512 )
+graph_offset = Vector2( -420.12, 273.672 )
 flags/unshaded = true
 nodes/fragment/0/position = Vector2( 540, 200 )
 nodes/fragment/9/node = SubResource( 6 )

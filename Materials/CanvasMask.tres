@@ -1,0 +1,21 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
+
+[ext_resource path="res://Game/Shaders/Images/circle mask.png" type="Texture" id=1]
+
+[sub_resource type="Shader" id=106]
+code = "shader_type canvas_item;
+
+uniform sampler2D shape;
+
+void fragment() {
+    vec4 shape_color = texture(shape, UV);
+    if (shape_color.r < 0.5) {
+        discard;
+    }
+    COLOR = texture(TEXTURE, UV);
+}
+"
+
+[resource]
+shader = SubResource( 106 )
+shader_param/shape = ExtResource( 1 )

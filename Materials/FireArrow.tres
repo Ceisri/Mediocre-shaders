@@ -1,16 +1,14 @@
-[gd_resource type="ShaderMaterial" load_steps=5 format=2]
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
 
-[ext_resource path="res://Game/Shaders/Images/FreezeSnow.png" type="Texture" id=1]
-[ext_resource path="res://Game/Shaders/Images/bump.jpg" type="Texture" id=2]
-[ext_resource path="res://Game/Shaders/Images/beam.png" type="Texture" id=3]
+[ext_resource path="res://Game/Shaders/Images/flamestexture.png" type="Texture" id=1]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id=4]
 code = "shader_type spatial;
 render_mode depth_draw_opaque, unshaded, shadows_disabled, cull_disabled;
 
 uniform sampler2D noise_tex : hint_white;
-uniform sampler2D displacement_texture; // Texture for vertex displacement
-uniform sampler2D displacement_rate_texture; // Texture for displacement rate control
+//uniform sampler2D displacement_texture; // Texture for vertex displacement
+//uniform sampler2D displacement_ratae_texture; // Texture for displacement rate control
 
 uniform vec4 root_color : hint_color = vec4(1.0, 0.75, 0.3, 1.0);
 uniform vec4 tip_color : hint_color = vec4(1.0, 0.03, 0.001, 1.0);
@@ -18,29 +16,29 @@ uniform vec4 tip_color : hint_color = vec4(1.0, 0.03, 0.001, 1.0);
 uniform float fire_alpha : hint_range(0.0, 1.0) = 1.0;
 uniform vec2 fire_speed = vec2(0.0, 1.0);
 uniform float fire_aperture : hint_range(0.0, 3.0) = 0.22;
-uniform vec2 displacement_speed = vec2(0.5, 0.5); // Speed of displacement texture movement
-uniform float displacement_amount : hint_range(0, 1) = 0.1; // Amount of vertex displacement
+//uniform vec2 displacement_speed = vec2(0.5, 0.5); // Speed of displacement texture movement
+//uniform float displacement_amount : hint_range(0, 1) = 0.1; // Amount of vertex displacement
 uniform float uv_scale_x : hint_range(0.1, 10.0) = 1.0; // UV scale X for manipulating UV size
 uniform float uv_scale_y : hint_range(0.1, 10.0) = 1.0; // UV scale Y for manipulating UV size
 
-// Vertex shader
-void vertex() {
-    vec2 uv = UV * vec2(uv_scale_x, uv_scale_y) + TIME * fire_speed; // Apply UV scaling and calculate scrolling UV coordinates for fire effect
-
-    // Calculate displacement UV coordinates with movement
-    vec2 displacement_uv = UV * vec2(uv_scale_x, uv_scale_y) + TIME * displacement_speed; // Apply UV scaling and animate UV for displacement texture
-    float displacement_value = texture(displacement_texture, displacement_uv).r; // Use animated UV for displacement
-
-    // Sample the displacement rate texture
-    vec2 displacement_rate_uv = UV * vec2(uv_scale_x, uv_scale_y) + TIME * displacement_speed; // Apply UV scaling and animate UV for rate texture
-    float displacement_rate = texture(displacement_rate_texture, displacement_rate_uv).r; // Control rate of displacement
-
-    // Apply displacement based on the rate texture
-    vec3 displacement = vec3(0.0, displacement_value * displacement_amount * displacement_rate, 0.0); // Displace along the Y axis
-
-    // Apply displacement
-    VERTEX += displacement; // Apply displacement
-}
+//// Vertex shader
+//void vertex() {
+//    vec2 uv = UV * vec2(uv_scale_x, uv_scale_y) + TIME * fire_speed; // Apply UV scaling and calculate scrolling UV coordinates for fire effect
+//
+//    // Calculate displacement UV coordinates with movement
+//    vec2 displacement_uv = UV * vec2(uv_scale_x, uv_scale_y) + TIME * displacement_speed; // Apply UV scaling and animate UV for displacement texture
+//    float displacement_value = texture(displacement_texture, displacement_uv).r; // Use animated UV for displacement
+//
+//    // Sample the displacement rate texture
+//    vec2 displacement_rate_uv = UV * vec2(uv_scale_x, uv_scale_y) + TIME * displacement_speed; // Apply UV scaling and animate UV for rate texture
+//    float displacement_rate = texture(displacement_rate_texture, displacement_rate_uv).r; // Control rate of displacement
+//
+//    // Apply displacement based on the rate texture
+//    vec3 displacement = vec3(0.0, displacement_value * displacement_amount * displacement_rate, 0.0); // Displace along the Y axis
+//
+//    // Apply displacement
+//    VERTEX += displacement; // Apply displacement
+//}
 
 // Fragment shader
 void fragment() {
@@ -57,16 +55,12 @@ void fragment() {
 
 [resource]
 render_priority = 2
-shader = SubResource( 1 )
+shader = SubResource( 4 )
 shader_param/root_color = Color( 1, 0.74902, 0.301961, 1 )
 shader_param/tip_color = Color( 1, 0.0313726, 0, 1 )
 shader_param/fire_alpha = 1.0
-shader_param/fire_speed = Vector2( 0, -1 )
+shader_param/fire_speed = Vector2( 0, 1 )
 shader_param/fire_aperture = 1.0
-shader_param/displacement_speed = Vector2( -1, -1 )
-shader_param/displacement_amount = 1.0
 shader_param/uv_scale_x = 1.0
 shader_param/uv_scale_y = 1.0
 shader_param/noise_tex = ExtResource( 1 )
-shader_param/displacement_texture = ExtResource( 2 )
-shader_param/displacement_rate_texture = ExtResource( 3 )
