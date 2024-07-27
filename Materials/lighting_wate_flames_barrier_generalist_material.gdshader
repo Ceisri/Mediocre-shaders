@@ -1,10 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=2]
-
-[ext_resource path="res://Game/Shaders/Images/mask2.png" type="Texture" id=1]
-[ext_resource path="res://Game/Shaders/Images/FX_PatternTile_05.png" type="Texture" id=2]
-
-[sub_resource type="Shader" id=8]
-code = "shader_type spatial;
+shader_type spatial;
 render_mode depth_draw_opaque, unshaded, shadows_disabled, cull_disabled;
 
 uniform sampler2D albedo_texture : hint_albedo;
@@ -58,17 +52,3 @@ void fragment() {
     ALBEDO = final_color;
     ALPHA = final_alpha;
 }
-"
-
-[resource]
-render_priority = 2
-shader = SubResource( 8 )
-shader_param/scroll_speed = 1.0
-shader_param/visibility_scroll_speed = 1.0
-shader_param/lightning_scroll_speed = 1.0
-shader_param/base_color = Color( 0, 1, 0.952941, 1 )
-shader_param/pulse_color = Color( 0.243137, 0, 1, 1 )
-shader_param/albedo_texture = ExtResource( 1 )
-shader_param/noise_texture = ExtResource( 1 )
-shader_param/visibility_noise_texture = ExtResource( 1 )
-shader_param/lightning_noise_texture = ExtResource( 2 )
