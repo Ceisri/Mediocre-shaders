@@ -1,0 +1,25 @@
+[gd_resource type="ShaderMaterial" load_steps=6 format=2]
+
+[ext_resource path="res://Game/World/Player/Materials/Head/Different_Colored_Eyes.tres" type="Shader" id=1]
+[ext_resource path="res://Game/World/Player/Textures/HFem.png" type="Texture" id=2]
+[ext_resource path="res://Game/World/Player/Textures/FHEye1.png" type="Texture" id=3]
+[ext_resource path="res://Game/World/Player/Textures/FHEye2.png" type="Texture" id=4]
+[ext_resource path="res://Game/World/Player/Textures/eye_skin_color_mask.png" type="Texture" id=5]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/left_eye_color_hint = Color( 0.0901961, 0.356863, 0.207843, 1 )
+shader_param/right_eye_color_hint = Color( 0, 0.494118, 0.517647, 1 )
+shader_param/albedo = Color( 1, 1, 1, 1 )
+shader_param/specular = null
+shader_param/metallic = null
+shader_param/roughness = null
+shader_param/point_size = null
+shader_param/uv1_scale = Vector3( 1, 1, 1 )
+shader_param/uv1_offset = Vector3( 0, 0, 0 )
+shader_param/uv2_scale = Vector3( 1, 1, 1 )
+shader_param/uv2_offset = Vector3( 1, 1, 1 )
+shader_param/base_albedo_texture = ExtResource( 2 )
+shader_param/left_eye_color_mask = ExtResource( 3 )
+shader_param/right_eye_color_mask = ExtResource( 4 )
+shader_param/skin_mask = ExtResource( 5 )

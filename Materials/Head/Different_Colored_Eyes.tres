@@ -1,0 +1,60 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type spatial;
+render_mode async_visible, blend_mix, depth_draw_alpha_prepass, cull_disabled, diffuse_burley, specular_schlick_ggx, unshaded;
+
+uniform sampler2D base_albedo_texture : hint_albedo; // Base albedo texture
+uniform sampler2D left_eye_color_mask : hint_albedo; // Left eye color mask texture
+uniform sampler2D right_eye_color_mask : hint_albedo; // Right eye color mask texture
+uniform sampler2D skin_mask : hint_albedo; // Skin mask texture
+uniform vec4 left_eye_color_hint : hint_color; // Color hint for left eye color mask
+uniform vec4 right_eye_color_hint : hint_color; // Color hint for right eye color mask
+uniform vec4 albedo : hint_color; // Color hint for the base albedo texture (default skin color)
+uniform float specular;
+uniform float metallic;
+uniform float roughness : hint_range(0,1);
+uniform float point_size : hint_range(0,128);
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+void vertex() {
+    UV = UV * uv1_scale.xy + uv1_offset.xy;
+}
+
+void fragment() {
+    vec2 base_uv = UV;
+    
+    // Base albedo texture
+    vec4 base_albedo_tex = texture(base_albedo_texture, base_uv);
+    
+    // Eye color masks and hints
+    vec4 left_eye_color_mask_tex = texture(left_eye_color_mask, base_uv);
+    vec4 right_eye_color_mask_tex = texture(right_eye_color_mask, base_uv);
+    
+    // Skin mask texture
+    vec4 skin_mask_tex = texture(skin_mask, base_uv);
+    
+    // Apply albedo color to the base albedo texture
+    vec4 modified_base_albedo = base_albedo_tex * albedo;
+    
+    // Apply color hint to the eye masks with alpha
+    vec4 left_eye_color = vec4(left_eye_color_hint.rgb, left_eye_color_hint.a * left_eye_color_mask_tex.a);
+    vec4 right_eye_color = vec4(right_eye_color_hint.rgb, right_eye_color_hint.a * right_eye_color_mask_tex.a);
+    
+    // Determine the final skin color based on the skin mask
+    vec4 skin_color = mix(vec4(1.0, 1.0, 1.0, 1.0) * base_albedo_tex, modified_base_albedo, skin_mask_tex.a);
+    
+    // Combine eye colors with the skin color
+    vec4 final_color = mix(skin_color, left_eye_color, left_eye_color.a);
+    final_color = mix(final_color, right_eye_color, right_eye_color.a);
+    
+    ALBEDO = final_color.rgb;
+    ALPHA = final_color.a; // Set the final alpha value
+    METALLIC = metallic;
+    ROUGHNESS = roughness;
+    SPECULAR = specular;
+}
+"
